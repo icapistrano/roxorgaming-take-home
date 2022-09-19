@@ -6,7 +6,7 @@ const config = {
   app: {
     width: window.innerWidth,
     height: window.innerHeight,
-    bg: 0xffff33
+    bg: 0x0f3422
   },
 
   logic: {
@@ -37,13 +37,20 @@ const config = {
     },
   },
 
+  largeCircle: {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2 - 150,
+    rad: 200,
+    initColour: 0xffffff
+  },
+
   buttons: {
-    red: 0xff0000,
-    blue: 0x0000ff,
-    green: 0x00ff00,
-    yellow: 0xffff00,
-    orange: 0xffa500
+    colours: [0xff0000,0x0000ff, 0x00ff00, 0xffff00, 0xffa500], // red, blue, green, yellow, orange
+    xPositions: [150, 300, 450, 600, 750],
+    yPositions: 650,
+    rad: 50
   }
+
 }
 
 const app = new GameApp(config);
