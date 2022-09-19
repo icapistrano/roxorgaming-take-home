@@ -1,19 +1,24 @@
 import { Text, TextStyle, Container, TextMetrics, Graphics } from 'pixi.js';
 
 export class Label {
-  constructor(msg, style, bg, position) {
+  constructor(style, bg, position) {
+    this.bg = bg;
     this.x = position.x;
     this.y = position.y;
-
     this.style = new TextStyle(style);
 
     this.label = new Container();
+  }
+
+  createLabel(msg) {
     this.text = this.createText(msg);
-    this.textBg = this.createBox(msg, bg);
+    this.textBg = this.createBox(msg, this.bg);
 
     // ordering matters
     this.label.addChild(this.textBg);
     this.label.addChild(this.text);
+
+    return this.label;
   }
 
   createText(msg) {
@@ -23,12 +28,12 @@ export class Label {
     return text;
   }
 
-  createBox(msg, bg) {
+  createBox(msg) {
     const { width, height } = new TextMetrics.measureText(msg, this.style);
     const rect = new Graphics();
-    rect.lineStyle(bg.borderWidth, bg.borderColour, 1);
-    rect.beginFill(bg.colour);
-    rect.drawRect(this.x-bg.padding, this.y-bg.padding, width+(bg.padding*2), height+(bg.padding*2));
+    rect.lineStyle(this.bg.borderWidth, this.bg.borderColour, 1);
+    rect.beginFill(this.bg.colour);
+    rect.drawRect(this.x-this.bg.padding, this.y-this.bg.padding, width+(this.bg.padding*2), height+(this.bg.padding*2));
     rect.endFill();
     return rect;
   }
