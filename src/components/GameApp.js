@@ -80,49 +80,59 @@ export class GameApp {
     return seconds * 1000;
   }
 
-  generateRandomNum() {
-    return Math.round(Math.random() * this.buttons.length - 1);
+  async generateRandomNum() {
+    const min = 0;
+    const max = 4;
+
+    const response = await fetch(`http://www.randomnumberapi.com/api/v1.0/random?min=${min}&max=${max}&count=1`);
+    if (response.status === 200) {
+      const data = await response.json();
+      return data[0];
+    }
+    return Math.floor(Math.random() * (max - min) + min); 
   }
 
-  startRound(id) {
-    if (!this.gameStarted) {
-      this.gameStarted = true;
+  startRound() {
+    this.gameStarted = true;
 
-      // change label text every second
-      this.roundSetIntervalId = setInterval(() => {
-        this.roundTracker -= 1;
-        this.timeRemainingLabel.updateText(`Time Remaining: ${this.roundTracker}`);
-      }, 1000);
+    // change label text every second
+    this.roundSetIntervalId = setInterval(() => {
+      this.roundTracker -= 1;
+      this.timeRemainingLabel.updateText(`Time Remaining: ${this.roundTracker}`);
+    }, 1000);
 
-      // start timer for round
-      this.roundSetTimeoutId = setTimeout(() => {
-        clearInterval(this.roundSetIntervalId);
-        clearInterval(this.circleSetIntervalId);
-      }, this.getMs(this.roundTimer));
-    }
+    // start timer for round
+    this.roundSetTimeoutId = setTimeout(() => {
+      clearInterval(this.roundSetIntervalId);
+      clearInterval(this.circleSetIntervalId);
+      clearTimeout(this.circleSetTimeoutId);
+    }, this.config.logic.roundMS);
+  }
+
+  updatePlayerScore() {
+    this.playerScore += 1;
+    this.playerScoreLabel.updateText(`Player Score: ${this.playerScore}`);
+  }
+
+  async guess(id) {
+    const randomNum = await this.generateRandomNum();
+    if (!this.gameStarted) this.startRound();
 
     this.buttons.forEach(btn => btn.disable()); // disable all buttons
     
-    // iterate colours
+    // iterate colours array and set colour to large circle
     this.circleSetIntervalId = setInterval(() => {
       this.currColour += 1;
       if (this.currColour >= this.buttons.length) this.currColour = 0;
-
       this.largeCircle.drawCircle(this.config.buttons.colours[this.currColour]);
     }, this.config.logic.guessMS / this.buttons.length)
 
-    // get random number after x seconds
+    // reset buttons, interval, update player score, set large circle to random colour
     this.circleSetTimeoutId = setTimeout(() => {
+      this.largeCircle.drawCircle(this.config.buttons.colours[randomNum]);
+      if (id === randomNum) this.updatePlayerScore(id);
+      this.buttons.forEach(btn => btn.enable());
       clearInterval(this.circleSetIntervalId);
-
-      this.buttons.forEach(btn => btn.enable()); // enable all buttons
-
-      // update score
-      if (id === this.generateRandomNum()) {
-        this.largeCircle.drawCircle(this.config.buttons.colours[id])
-        this.playerScore += 1;
-        this.playerScoreLabel.updateText(`Player Score: ${this.playerScore}`);
-      }
     }, this.config.logic.guessMS);
   }
 }

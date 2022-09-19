@@ -10,7 +10,7 @@ export class Button extends Circle {
   createButton(colour) {
     this.graphics = this.drawCircle(colour);
     this.graphics.on('click', () => {
-      this.app.startRound(this.id);
+      this.app.guess(this.id);
     });
 
     this.enable();
