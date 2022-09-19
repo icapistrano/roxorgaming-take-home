@@ -37,4 +37,9 @@ export class Label {
     rect.endFill();
     return rect;
   }
+
+  updateText(msg) {
+    const text = this.label.children[1];
+    text.text = msg;
+  }
 }
