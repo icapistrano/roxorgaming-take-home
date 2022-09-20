@@ -65,13 +65,13 @@ export class GameApp extends Application{
 
     // logic
     this.gameStarted = false;
-    this.roundSetTimeoutId;
-    this.roundSetIntervalId;
+    this.roundSetTimeoutId = null;
+    this.roundSetIntervalId = null;
     this.roundTracker = this.roundTimer;
 
     this.currColour = 0;
-    this.circleSetIntervalId;
-    this.circleSetTimeoutId;
+    this.circleSetIntervalId = null;
+    this.circleSetTimeoutId = null;
 
     // results
     this.results = new Results(this);
@@ -149,6 +149,14 @@ export class GameApp extends Application{
     if (!this.gameStarted) this.startRound();
 
     this.buttons.forEach(btn => btn.disable()); // disable all buttons
+    
+    // clear interval and timeout to catch repeated btn presses
+    if (this.circleSetIntervalId !== null || this.circleSetTimeoutId !== null) {
+      clearInterval(this.circleSetIntervalId);
+      clearTimeout(this.circleSetTimeoutId);
+      this.circleSetIntervalId = null;
+      this.circleSetTimeoutId = null;
+    }
     
     // iterate colours array and set colour to large circle
     this.circleSetIntervalId = setInterval(() => {
