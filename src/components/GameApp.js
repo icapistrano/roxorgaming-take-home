@@ -2,6 +2,7 @@ import { Application } from 'pixi.js';
 import { Label } from "./Label.js";
 import { Circle } from "./Circle.js";
 import { Button } from "./Button.js";
+import { Results } from "./Results.js"; 
 
 export class GameApp extends Application{
   constructor(config) {
@@ -67,6 +68,12 @@ export class GameApp extends Application{
     this.currColour = 0;
     this.circleSetIntervalId;
     this.circleSetTimeoutId;
+
+    // results
+    this.results = new Results(this, this.config.results);
+    // this.add(this.results.page)
+    // this.stage.removeChild(this.results.page)
+    // this.resetRound()
   }
 
   add(obj) {
@@ -103,7 +110,18 @@ export class GameApp extends Application{
       clearInterval(this.roundSetIntervalId);
       clearInterval(this.circleSetIntervalId);
       clearTimeout(this.circleSetTimeoutId);
+      this.gameStarted = false;
+      this.add(this.results.page);
     }, this.config.logic.roundMS);
+  }
+
+  resetRound() {
+    this.gameStarted = false;
+    this.roundTracker = this.roundTimer;
+    this.timeRemainingLabel.updateText(`Time Remaining: ${this.roundTracker}`);
+    this.playerScoreLabel.updateText(`Player Score: ${this.config.logic.initScore}`);
+    this.buttons.forEach(btn => btn.enable());
+    this.stage.removeChild(this.results.page);
   }
 
   updatePlayerScore() {
