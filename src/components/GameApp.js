@@ -3,17 +3,17 @@ import { Label } from "./Label.js";
 import { Circle } from "./Circle.js";
 import { Button } from "./Button.js";
 
-export class GameApp {
+export class GameApp extends Application{
   constructor(config) {
-    this.config = config;
-
-    this.app = new Application({
+    super({
       width: config.app.width, 
       height: config.app.height, 
       backgroundColor: config.app.bg
     });
 
-    document.body.appendChild(this.app.view);
+    this.config = config;
+
+    document.body.appendChild(this.view);
 
     // time remaining text field
     this.roundTimer = this.getSeconds(config.logic.roundMS);
@@ -52,7 +52,8 @@ export class GameApp {
       const y = config.buttons.yPositions;
       const rad = config.buttons.rad
 
-      const button = new Button(i, x, y, rad, this);
+      const button = new Button(i, x, y, rad);
+      button.attachCb(() => this.guess(button.id));
       this.buttons.push(button);
       this.add(button.createButton(colour));
     }
@@ -69,20 +70,16 @@ export class GameApp {
   }
 
   add(obj) {
-    this.app.stage.addChild(obj);
+    this.stage.addChild(obj);
   }
 
   getSeconds(ms) {
     return ms / 1000;
   }
 
-  getMs(seconds) {
-    return seconds * 1000;
-  }
-
   async generateRandomNum() {
     const min = 0;
-    const max = 4;
+    const max = this.buttons.length - 1;
 
     const response = await fetch(`http://www.randomnumberapi.com/api/v1.0/random?min=${min}&max=${max}&count=1`);
     if (response.status === 200) {
