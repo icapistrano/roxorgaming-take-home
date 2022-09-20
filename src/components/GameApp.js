@@ -10,7 +10,8 @@ export class GameApp extends Application{
     super({
       width: config.app.width, 
       height: config.app.height, 
-      backgroundColor: config.app.bg
+      backgroundColor: config.app.bg,
+      antialias: true
     });
 
     this.config = config;
