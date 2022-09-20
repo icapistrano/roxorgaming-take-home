@@ -6,6 +6,9 @@ export class Button extends Circle {
   constructor(id, x, y, rad) {
     super(x, y, rad);
     this.id = id;
+
+    this.TINT = 0x808080;
+    this.UNTINT = 0xffffff;
   }
 
   createButton(colour) {
@@ -30,10 +33,12 @@ export class Button extends Circle {
   enable() {
     this.graphics.interactive = true;
     this.graphics.buttonMode = true;
+    this.graphics.tint = this.UNTINT;
   }
 
   disable() {
     this.graphics.interactive = false;
     this.graphics.buttonMode = false;
+    this.graphics.tint = this.TINT;
   }
 }

@@ -10,7 +10,7 @@ const config = {
   },
 
   logic: {
-    roundMS: 10000,
+    roundMS: 20000,
     guessMS: 2000,
     initScore: 0
   },
@@ -19,12 +19,12 @@ const config = {
     style: {
       fontFamily: 'Arial',
       fontSize: 24,
-      fill: 0x000000,
+      fill: 0xffffff,
     },
     bg: {
-      colour: 0xffffff,
+      colour: 0x0f3422,
       borderWidth: 2,
-      borderColour: 0x000000,
+      borderColour: 0xffffff,
       padding:20
     },
     timeRemainingLabel: { x: 40, y: 40 },
@@ -48,12 +48,12 @@ const config = {
   },
 
   playAgainBtn: {
-    rad: 100,
+    rad: 120,
     colour: 0xff2222,
     textStyle: {
       fontFamily: 'Arial',
-      fontSize: 26,
-      fill: 0x000000,
+      fontSize: 30,
+      fill: 0xffffff,
     },
     position: { x: 400, y: 400}
   },

@@ -125,9 +125,10 @@ export class GameApp extends Application{
   }
 
   resetRound() {
-    // reset game, player score, timers, labels, buttons and remove results page
+    // reset game, player score, large circle, timers, labels, buttons and remove results page
     this.gameStarted = false;
     this.player.resetRoundScore();
+    this.largeCircle.drawCircle(this.config.largeCircle.initColour);
     this.roundTracker = this.roundTimer;
     this.timeRemainingLabel.updateText(`Time Remaining: ${this.roundTracker}`);
     this.playerScoreLabel.updateText(`Round Score: ${this.config.logic.initScore}`);
