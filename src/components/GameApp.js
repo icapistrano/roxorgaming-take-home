@@ -3,6 +3,7 @@ import { Label } from "./Label.js";
 import { Circle } from "./Circle.js";
 import { Button } from "./Button.js";
 import { Results } from "./Results.js"; 
+import { Player } from './Player.js';
 
 export class GameApp extends Application{
   constructor(config) {
@@ -16,6 +17,9 @@ export class GameApp extends Application{
 
     document.body.appendChild(this.view);
 
+    // contain player data
+    this.player = new Player();
+
     // time remaining text field
     this.roundTimer = this.getSeconds(config.logic.roundMS);
     this.timeRemainingLabel = new Label(
@@ -26,15 +30,14 @@ export class GameApp extends Application{
 
     this.add(this.timeRemainingLabel.createLabel(`Time Remaining: ${this.roundTimer}`));
 
-    // player score
-    this.playerScore = config.logic.initScore;
+    // player score text field
     this.playerScoreLabel = new Label( 
       config.text.style,
       config.text.bg,
       config.text.playerScoreLabel
       );
 
-    this.add(this.playerScoreLabel.createLabel(`Player Score: ${this.playerScore}`));
+    this.add(this.playerScoreLabel.createLabel(`Round Score: ${this.player.roundScore}`));
 
     // large circle
     this.largeCircle = new Circle(
@@ -70,14 +73,15 @@ export class GameApp extends Application{
     this.circleSetTimeoutId;
 
     // results
-    this.results = new Results(this, this.config.results);
-    // this.add(this.results.page)
-    // this.stage.removeChild(this.results.page)
-    // this.resetRound()
+    this.results = new Results(this);
   }
 
   add(obj) {
     this.stage.addChild(obj);
+  }
+
+  remove(obj) {
+    this.stage.removeChild(obj);
   }
 
   getSeconds(ms) {
@@ -85,6 +89,7 @@ export class GameApp extends Application{
   }
 
   async generateRandomNum() {
+    // if possible, get random number from api else generate random number
     const min = 0;
     const max = this.buttons.length - 1;
 
@@ -107,26 +112,33 @@ export class GameApp extends Application{
 
     // start timer for round
     this.roundSetTimeoutId = setTimeout(() => {
+
+      // clear intervals and timeout
       clearInterval(this.roundSetIntervalId);
       clearInterval(this.circleSetIntervalId);
       clearTimeout(this.circleSetTimeoutId);
-      this.gameStarted = false;
+
+      // update result labels and show result page
+      this.results.updateLabels();
       this.add(this.results.page);
     }, this.config.logic.roundMS);
   }
 
   resetRound() {
+    // reset game, player score, timers, labels, buttons and remove results page
     this.gameStarted = false;
+    this.player.resetRoundScore();
     this.roundTracker = this.roundTimer;
     this.timeRemainingLabel.updateText(`Time Remaining: ${this.roundTracker}`);
-    this.playerScoreLabel.updateText(`Player Score: ${this.config.logic.initScore}`);
+    this.playerScoreLabel.updateText(`Round Score: ${this.config.logic.initScore}`);
     this.buttons.forEach(btn => btn.enable());
-    this.stage.removeChild(this.results.page);
+    this.remove(this.results.page);
   }
 
   updatePlayerScore() {
-    this.playerScore += 1;
-    this.playerScoreLabel.updateText(`Player Score: ${this.playerScore}`);
+    this.player.incrementRoundScore();
+    this.player.incrementTotalScore();
+    this.playerScoreLabel.updateText(`Round Score: ${this.player.roundScore}`);
   }
 
   async guess(id) {
@@ -145,7 +157,7 @@ export class GameApp extends Application{
     // reset buttons, interval, update player score, set large circle to random colour
     this.circleSetTimeoutId = setTimeout(() => {
       this.largeCircle.drawCircle(this.config.buttons.colours[randomNum]);
-      if (id === randomNum) this.updatePlayerScore(id);
+      if (id === randomNum) this.updatePlayerScore();
       this.buttons.forEach(btn => btn.enable());
       clearInterval(this.circleSetIntervalId);
     }, this.config.logic.guessMS);

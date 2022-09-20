@@ -3,23 +3,40 @@ import { Button } from './Button';
 import { Label } from './Label';
 
 export class Results {
-  constructor(app, config) {
+  constructor(app) {
     this.app = app; // pass app as its part of app
     this.page = new Container();
 
     // background
-    const bg = this.createBg(config.bg);
+    const bg = this.createBg(this.app.config.results.bg);
     this.page.addChild(bg);
     
-    // final score label
-    this.finalScoreLabel = this.setNewLabel(config.finalScore);
-    this.page.addChild(this.finalScoreLabel.createLabel("Final Score: 10"));
+    // round score label
+    this.roundScoreLabel = new Label(
+      this.app.config.text.style,
+      this.app.config.text.bg,
+      this.app.config.text.roundScoreLabel 
+      );
+    this.page.addChild(this.roundScoreLabel.createLabel(`Round Score: ${this.app.player.roundScore}`));
+
+    // total score label
+    this.totalScoreLabel = new Label(
+      this.app.config.text.style,
+      this.app.config.text.bg,
+      this.app.config.text.totalScoreLabel 
+    );
+    this.page.addChild(this.totalScoreLabel.createLabel(`Total Score: ${this.app.player.totalScore}`));
 
     // play again button
-    this.playAgainBtn = this.setNewButton(config.playAgain);
-    this.playAgainBtn.createText("Play Again?", config.playAgain.textStyle);
+    this.playAgainBtn = new Button(
+      'play-again-btn', 
+      this.app.config.playAgainBtn.position.x, 
+      this.app.config.playAgainBtn.position.y, 
+      this.app.config.playAgainBtn.rad
+      );;
+    this.playAgainBtn.createText("Play Again?", this.app.config.playAgainBtn.textStyle);
     this.playAgainBtn.attachCb(this.resetRound);
-    this.page.addChild(this.playAgainBtn.createButton(config.playAgain.colour));
+    this.page.addChild(this.playAgainBtn.createButton(this.app.config.playAgainBtn.colour));
   }
 
   // need this, else button will refer this to its graphics for passing cb
@@ -35,22 +52,8 @@ export class Results {
     return bg;
   }
 
-  setNewLabel(config) {
-    const label = new Label(
-      config.textStyle, 
-      config.background, 
-      config.position
-      );
-    return label;
-  }
-
-  setNewButton(config) {
-    const btn = new Button(
-      'play-again-btn', 
-      config.position.x, 
-      config.position.y, 
-      config.rad
-      );
-    return btn;
+  updateLabels() {
+    this.roundScoreLabel.updateText(`Round Score: ${this.app.player.roundScore}`);
+    this.totalScoreLabel.updateText(`Total Score: ${this.app.player.totalScore}`);
   }
 }
