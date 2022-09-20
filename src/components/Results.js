@@ -27,6 +27,15 @@ export class Results {
     );
     this.page.addChild(this.totalScoreLabel.createLabel(`Total Score: ${this.app.player.totalScore}`));
 
+    // games played label
+    this.roundsPlayedLabel = new Label(
+      this.app.config.text.style,
+      this.app.config.text.bg,
+      this.app.config.text.roundsPlayedLabel 
+    );
+    this.page.addChild(this.roundsPlayedLabel.createLabel(`Total Rounds: ${this.app.roundsPlayed}`));
+
+
     // play again button
     this.playAgainBtn = new Button(
       'play-again-btn', 
@@ -55,5 +64,6 @@ export class Results {
   updateLabels() {
     this.roundScoreLabel.updateText(`Round Score: ${this.app.player.roundScore}`);
     this.totalScoreLabel.updateText(`Total Score: ${this.app.player.totalScore}`);
+    this.roundsPlayedLabel.updateText(`Total Rounds: ${this.app.roundsPlayed}`)
   }
 }

@@ -19,6 +19,7 @@ export class GameApp extends Application{
 
     // contain player data
     this.player = new Player();
+    this.roundsPlayed = 0;
 
     // time remaining text field
     this.roundTimer = this.getSeconds(config.logic.roundMS);
@@ -112,6 +113,7 @@ export class GameApp extends Application{
 
     // start timer for round
     this.roundSetTimeoutId = setTimeout(() => {
+      this.roundsPlayed += 1;
 
       // clear intervals and timeout
       clearInterval(this.roundSetIntervalId);

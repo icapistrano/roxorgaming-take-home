@@ -10,7 +10,7 @@ const config = {
   },
 
   logic: {
-    roundMS: 20000,
+    roundMS: 10000,
     guessMS: 2000,
     initScore: 0
   },
@@ -30,7 +30,8 @@ const config = {
     timeRemainingLabel: { x: 40, y: 40 },
     playerScoreLabel: { x: 40, y: 120 },
     roundScoreLabel: { x: 40, y: 40 },
-    totalScoreLabel: { x: 40, y: 120 }
+    totalScoreLabel: { x: 40, y: 120 },
+    roundsPlayedLabel: { x: 40, y: 200 },
   },
 
   largeCircle: {
