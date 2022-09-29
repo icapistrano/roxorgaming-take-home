@@ -64,18 +64,16 @@ export class GameApp extends Application{
       this.add(button.createButton(colour));
     }
 
-    // logic
-    this.gameStarted = false;
-    this.roundSetTimeoutId = null;
-    this.roundSetIntervalId = null;
-    this.roundTracker = this.roundTimer;
-
-    this.currColour = 0;
-    this.circleSetIntervalId = null;
-    this.circleSetTimeoutId = null;
-
     // results
     this.results = new Results(this);
+
+    // logic
+    this.gameStarted = false;
+    this.roundCurrTime = 0; // keep track of current time elapsed, can be restarted
+    this.guessCurrTime = 0;
+    this.currColour = 0;
+    this.chosenBtnId;
+    this.chosenRandomNum;
   }
 
   add(obj) {
@@ -87,7 +85,7 @@ export class GameApp extends Application{
   }
 
   getSeconds(ms) {
-    return ms / 1000;
+    return Math.floor(ms / 1000);
   }
 
   async generateRandomNum() {
@@ -105,26 +103,7 @@ export class GameApp extends Application{
 
   startRound() {
     this.gameStarted = true;
-
-    // change label text every second
-    this.roundSetIntervalId = setInterval(() => {
-      this.roundTracker -= 1;
-      this.timeRemainingLabel.updateText(`Time Remaining: ${this.roundTracker}`);
-    }, 1000);
-
-    // start timer for round
-    this.roundSetTimeoutId = setTimeout(() => {
-      this.roundsPlayed += 1;
-
-      // clear intervals and timeout
-      clearInterval(this.roundSetIntervalId);
-      clearInterval(this.circleSetIntervalId);
-      clearTimeout(this.circleSetTimeoutId);
-
-      // update result labels and show result page
-      this.results.updateLabels();
-      this.add(this.results.page);
-    }, this.config.logic.roundMS);
+    this.ticker.add(this.gameLoop);
   }
 
   resetRound() {
@@ -132,11 +111,13 @@ export class GameApp extends Application{
     this.gameStarted = false;
     this.player.resetRoundScore();
     this.largeCircle.drawCircle(this.config.largeCircle.initColour);
-    this.roundTracker = this.roundTimer;
-    this.timeRemainingLabel.updateText(`Time Remaining: ${this.roundTracker}`);
+    this.timeRemainingLabel.updateText(`Time Remaining: ${this.roundTimer}`);
     this.playerScoreLabel.updateText(`Round Score: ${this.config.logic.initScore}`);
     this.buttons.forEach(btn => btn.enable());
     this.remove(this.results.page);
+
+    this.roundCurrTime = 0;
+    this.guessCurrTime = 0;
   }
 
   updatePlayerScore() {
@@ -146,32 +127,52 @@ export class GameApp extends Application{
   }
 
   async guess(id) {
-    const randomNum = await this.generateRandomNum();
+    this.buttons.forEach(btn => btn.disable()); // disable all buttons
+
     if (!this.gameStarted) this.startRound();
 
-    this.buttons.forEach(btn => btn.disable()); // disable all buttons
-    
-    // clear interval and timeout to catch repeated btn presses
-    if (this.circleSetIntervalId !== null || this.circleSetTimeoutId !== null) {
-      clearInterval(this.circleSetIntervalId);
-      clearTimeout(this.circleSetTimeoutId);
-      this.circleSetIntervalId = null;
-      this.circleSetTimeoutId = null;
-    }
-    
-    // iterate colours array and set colour to large circle
-    this.circleSetIntervalId = setInterval(() => {
-      this.currColour += 1;
-      if (this.currColour >= this.buttons.length) this.currColour = 0;
-      this.largeCircle.drawCircle(this.config.buttons.colours[this.currColour]);
-    }, this.config.logic.guessMS / this.buttons.length)
+    this.chosenBtnId = id;
+    this.chosenRandomNum = await this.generateRandomNum();
 
-    // reset buttons, interval, update player score, set large circle to random colour
-    this.circleSetTimeoutId = setTimeout(() => {
-      this.largeCircle.drawCircle(this.config.buttons.colours[randomNum]);
-      if (id === randomNum) this.updatePlayerScore();
+    // dont start guess if not enough timer on round
+    if (this.roundTimer - this.getSeconds(this.roundCurrTime) >= this.getSeconds(this.config.logic.guessMS)) {
+      this.ticker.add(this.guessLoop);
+    }
+  }
+
+  gameLoop = () => {
+    this.roundCurrTime += this.ticker.elapsedMS;
+
+    const passedS = this.getSeconds(this.config.logic.roundMS - this.roundCurrTime);
+    this.timeRemainingLabel.updateText(`Time Remaining: ${passedS}`);
+
+    // end round: remove ticker, update rounds and labels
+    if (passedS <= 0) {
+      this.ticker.remove(this.gameLoop);
+      this.ticker.remove(this.guessLoop)
+      this.roundsPlayed += 1;
+      this.results.updateLabels();
+      this.add(this.results.page);
+    }
+  }
+
+  guessLoop = () => {
+    this.guessCurrTime += this.ticker.elapsedMS;
+
+    const passedS = this.getSeconds(this.config.logic.guessMS - this.guessCurrTime);
+
+    // iterate colour for large circle
+    this.currColour += 1;
+    if (this.currColour >= this.buttons.length) this.currColour = 0;
+    this.largeCircle.drawCircle(this.config.buttons.colours[this.currColour]);
+
+    // end guess: remove ticker, draw final large circle's colour, update scores, restart counter
+    if (passedS <= 0) {
+      this.ticker.remove(this.guessLoop);
+      this.largeCircle.drawCircle(this.config.buttons.colours[this.chosenRandomNum]);
       this.buttons.forEach(btn => btn.enable());
-      clearInterval(this.circleSetIntervalId);
-    }, this.config.logic.guessMS);
+      this.guessCurrTime = 0;
+      if (this.chosenBtnId === this.chosenRandomNum) this.updatePlayerScore();
+    }
   }
 }
